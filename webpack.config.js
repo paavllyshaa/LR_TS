@@ -1,40 +1,44 @@
 const path = require('path');
-const { merge } = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const DotenvWebpackPlugin = require('dotenv-webpack');
+const Dotenv = require('dotenv-webpack');
 
-const baseConfig = {
-    entry: path.resolve(__dirname, './src/index.js'),
-    mode: 'development',
+module.exports = {
+    entry: './src/index.ts', 
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'bundle.js',
+        clean: true
+    },
     module: {
         rules: [
             {
-                test: /\.css$/i,
-                use: ['style-loader', 'css-loader'],
+                test: /\.ts$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
             },
-        ],
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader']
+            }
+        ]
     },
     resolve: {
-        extensions: ['.js'],
-    },
-    output: {
-        filename: 'index.js',
-        path: path.resolve(__dirname, './dist'),
+        extensions: ['.ts', '.js'] 
     },
     plugins: [
-        new DotenvWebpackPlugin(),
         new HtmlWebpackPlugin({
-            template: path.resolve(__dirname, './src/index.html'),
-            filename: 'index.html',
+            template: './src/index.html',
+            filename: 'index.html'
         }),
-        new CleanWebpackPlugin(),
+        new Dotenv()
     ],
-};
-
-module.exports = ({ mode }) => {
-    const isProductionMode = mode === 'prod';
-    const envConfig = isProductionMode ? require('./webpack.prod.config') : require('./webpack.dev.config');
-
-    return merge(baseConfig, envConfig);
+    devServer: {
+        static: {
+            directory: path.join(__dirname, 'dist')
+        },
+        port: 8080,
+        open: true,
+        hot: true
+    },
+    mode: 'development'
 };
